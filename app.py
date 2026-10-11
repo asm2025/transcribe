@@ -67,6 +67,9 @@ def load_diarization(token, use_gpu):
                            "the model terms on huggingface.co")
     if use_gpu:
         if torch.cuda.is_available():
+            # cuDNN's default algorithm pick for some batch sizes (e.g. the last,
+            # partial embedding batch) is ~200x slower; benchmarking avoids it.
+            torch.backends.cudnn.benchmark = True
             pipeline.to(torch.device("cuda"))
         else:
             print("[warn] Installed torch has no CUDA support; diarization runs on CPU.", file=sys.stderr)
@@ -75,8 +78,15 @@ def load_diarization(token, use_gpu):
 
 def diarize(pipeline, path, args):
     """Return [(start, end, speaker_label)] turns, labels numbered by first appearance."""
+    import warnings
     import torch
     from faster_whisper import decode_audio
+    from pyannote.audio.pipelines.utils.hook import ProgressHook
+
+    # Harmless: pyannote pools a chunk with a single frame (e.g. at the end of the file).
+    warnings.filterwarnings("ignore", message=r"std\(\): degrees of freedom")
+    # Informational: pyannote disables TF32 on GPU for reproducibility.
+    warnings.filterwarnings("ignore", message=r"TensorFloat-32 \(TF32\) has been disabled")
 
     # Decode with faster-whisper's PyAV loader (16 kHz mono) so pyannote doesn't
     # need its own audio backend (torchcodec + FFmpeg DLLs).
@@ -84,7 +94,9 @@ def diarize(pipeline, path, args):
     kwargs = {k: v for k, v in (("num_speakers", args.speakers),
                                 ("min_speakers", args.min_speakers),
                                 ("max_speakers", args.max_speakers)) if v is not None}
-    output = pipeline({"waveform": torch.from_numpy(audio).unsqueeze(0), "sample_rate": 16000}, **kwargs)
+    with ProgressHook() as hook:
+        output = pipeline({"waveform": torch.from_numpy(audio).unsqueeze(0), "sample_rate": 16000},
+                          hook=hook, **kwargs)
     # Exclusive diarization has no overlapping turns, which suits transcript alignment.
     annotation = output.exclusive_speaker_diarization
 

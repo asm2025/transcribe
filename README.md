@@ -50,9 +50,9 @@ model is gated on Hugging Face, so a one-time setup is needed:
 
 The model is downloaded on first use and cached locally; after that, diarization runs offline.
 
-> **Note:** The `torch` installed from PyPI on Windows is CPU-only, so diarization runs on the CPU even with `--gpu`
-> (a warning is printed; transcription itself still uses the GPU). Expect diarization to take roughly
-> as long as a CPU transcription of the same file.
+> **Note:** On Windows, `pyproject.toml` pulls the CUDA 12.6 build of `torch` from the PyTorch index (the PyPI
+> build is CPU-only), so `--gpu` also runs diarization on the GPU. Without `--gpu`, diarization runs on the CPU
+> and can take a long time on long recordings; progress bars show each stage.
 
 ## Usage
 
