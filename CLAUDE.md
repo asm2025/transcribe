@@ -27,4 +27,5 @@ Models download from Hugging Face on first use (cached in `~/.cache/huggingface/
 Behavior to preserve:
 - Output goes next to each input: `path.with_suffix(".txt")`, one `[start -> end] text` line per segment, same as stdout.
 - `transcribe(..., beam_size=5, vad_filter=True)`; GPU uses `float16`, CPU uses `float32`.
+- `--diarize` (pyannote `speaker-diarization-community-1`, needs HF token) imports torch/pyannote lazily, decodes audio via `faster_whisper.decode_audio` (avoids torchcodec/FFmpeg), enables `word_timestamps`, and splits lines on speaker change: `[start -> end] Speaker N: text`. PyPI torch on Windows is CPU-only.
 - Missing/failed files are skipped; remaining files still process; exit code is 1 if any failed. Model load failure exits immediately.
