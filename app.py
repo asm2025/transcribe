@@ -75,8 +75,9 @@ def main():
 
             with open(out_path, "w", encoding="utf-8") as out:
                 for seg in segments:
-                    print(f"[{seg.start:.2f}s -> {seg.end:.2f}s] {seg.text}")
-                    out.write(seg.text.strip() + " ")
+                    line = f"[{seg.start:.2f}s -> {seg.end:.2f}s] {seg.text.strip()}"
+                    print(line)
+                    out.write(line + "\n")
         except Exception as e:
             print(f"[error] {path}: {e}", file=sys.stderr)
             failed += 1

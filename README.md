@@ -4,23 +4,21 @@ Batch-transcribe audio/video files to text using [faster-whisper](https://github
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.13+
 - [uv](https://github.com/astral-sh/uv)
 
 ## Setup
 
 ```bash
 cd transcribe
-uv add faster-whisper
+uv sync
 ```
+
+This installs all dependencies from `uv.lock`, including faster-whisper and the CUDA libraries (`nvidia-cublas-cu12`, `nvidia-cudnn-cu12`).
 
 ### GPU support (optional)
 
-If you have an NVIDIA GPU and want to use it, also install the CUDA libraries:
-
-```bash
-uv add nvidia-cublas-cu12 nvidia-cudnn-cu12
-```
+The CUDA libraries are already installed by `uv sync`; to use them, pass `--gpu`.
 
 > **Note:** Requires an NVIDIA driver with CUDA 12 support (`nvidia-smi` should report "CUDA Version: 12.x" or higher).
 > On Windows, the script automatically adds the pip-installed NVIDIA DLL directories to the DLL search path,
